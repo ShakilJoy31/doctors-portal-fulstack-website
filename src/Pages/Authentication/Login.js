@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthState, useCreateUserWithEmailAndPassword } from 'react-firebase-hooks/auth';
 import auth from './../../firebase.init';
@@ -7,10 +7,16 @@ import { useSignInWithGoogle } from 'react-firebase-hooks/auth';
 import { useSignInWithGithub } from 'react-firebase-hooks/auth';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useLocation } from 'react-router-dom';
+import useToken from '../Shered/useToken';
+import Loading from '../Shered/Loading';
 
 const Login = () => {
 
     const navigate = useNavigate(); 
+    const location = useLocation(); 
+    const from = location?.state?.from?.pathname || '/'; 
+
     const handleSentToSignUp = () =>{
         navigate('/signup')
     }
@@ -40,12 +46,18 @@ const Login = () => {
     const handleSignInWithGithub = () =>{
         signInWithGithub(); 
     }
-
+    
     const [generalUser] = useAuthState(auth);
 
-    if(generalUser){
-        toast('Authentication Verified'); 
-    }
+    const [token] = useToken(generalUser || googleUser || githubUser); 
+
+
+
+    useEffect(()=>{
+        if(token){ 
+            navigate(from, {replace: true}); 
+        }
+    },[token, from, navigate])
 
     return (
         <div className='flex items-center justify-center h-screen'>
